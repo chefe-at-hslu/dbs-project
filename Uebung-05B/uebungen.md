@@ -143,7 +143,7 @@ begin
     end loop;
 end;
 $$
-language 'plpgsql'
+language 'plpgsql';
 
 select f('2016-11-11', 111);
 
@@ -172,3 +172,127 @@ dies der Fall, wird das jeweilige Datum mit `yay = true` in die Tabelle `t`
 geschrieben, sonst wird der neue Eintrag mit `yay = false` geschrieben. Das
 Programm fährt mit dem nächsten Tag fort, bis die gewünschze Anzahl Tage
 abgearbeitet sind.
+
+## 4. Verbindung von JDBC mit Stored Procedures
+
+```java
+package main;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+public class Exercise4 {
+
+    public static void main(String[] args) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate fromDate = LocalDate.parse(args[0], formatter);
+        int numberOfDates = Integer.valueOf(args[1]);
+        final String connectionString = "jdbc:postgresql://127.0.0.1:5432/unidb";
+        try {
+            Class.forName("org.postgresql.Driver");
+            Connection connection = DriverManager.getConnection(connectionString,
+                "postgres", "postgres");
+            Statement statement = connection.createStatement();
+            statement.execute("DELETE FROM t");
+            PreparedStatement prep = connection.prepareStatement("SELECT f(?, ?)");
+            prep.setDate(1, java.sql.Date.valueOf(fromDate));
+            prep.setInt(2, numberOfDates);
+            prep.execute();
+            ResultSet days = statement.executeQuery("SELECT datum, yay FROM t");
+            System.out.println("datum\t\tyay");
+            System.out.println("-----\t\t---");
+            while (days.next()) {
+                System.out.println(days.getString("datum") + "\t" +
+                    days.getBoolean("yay"));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+}
+
+```
+
+Ausgabe:
+
+    datum       yay
+    -----       ---
+    2017-10-01  true
+    2017-10-02  false
+    2017-10-03  false
+    2017-10-04  false
+    2017-10-05  false
+    2017-10-06  false
+    2017-10-07  true
+    2017-10-08  true
+    2017-10-09  false
+    2017-10-10  false
+
+## 5. Stored Functions und Cursors
+
+```sql
+create or replace function median_semester()
+returns float
+as $$
+declare
+    stud_cursor cursor for select semester from studenten order by semester asc;
+    size int;
+    a int;
+    b int;
+    sem int;
+    i int;
+    lower int;
+    upper int;
+begin
+    size := 0;
+    i := 1;
+    open stud_cursor;
+    loop
+        fetch stud_cursor into sem;
+        exit when not found;
+        size = size + 1;
+    end loop;
+    close stud_cursor;
+    /* even number of entries: calculate mean of middle two */
+    if size % 2 = 0 then
+        a := size / 2;
+        b := a + 1;
+        open stud_cursor;
+        loop
+            fetch stud_cursor into sem;
+            if i = a then
+                lower = sem;
+            end if;
+            if i = b then
+                upper = sem;
+                exit;
+            end if;
+            i := i + 1;
+        end loop;
+        close stud_cursor;
+        return (lower + upper) / 2;
+    /* odd number of entries: return middle entry */
+    else
+        a = size / 2;
+        open stud_cursor;
+        loop
+            fetch stud_cursor into sem;
+            if i = a then
+                lower = sem;
+                exit;
+            end if;
+            i := i + 1;
+        end loop;
+        close stud_cursor;
+        return lower;
+    end if;
+end;
+$$ language 'plpgsql';
+
+select median_semester();
+```
