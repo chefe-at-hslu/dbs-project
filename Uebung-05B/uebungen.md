@@ -1,5 +1,8 @@
 # Übung DP: Datenbankprogrammierung
 
+Gruppe 8: Lukas Arnold, Patrick Bucher, Christopher James Christensen, Jonas
+Kaiser, Melvin Werthmüller
+
 ## 1. Selbststudium
 
 ### Frage 1
