@@ -38,3 +38,137 @@ Wozu werden Datenbanksprachen in andere Sprachen eingebettet?
   Anwendungssoftware. Anwendungssoftware wird zumeist nicht in SQL, sondern mit
   einer anderen Programmiersprache geschrieben. Diese andere Programmiersprache
   muss eine Möglichkeit haben, SQL-Befehle auf eine Datenbank abzusetzen.
+
+## 2. Hello JDBC
+
+```java
+package main;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+public class HelloJDBC {
+
+    public static void main(String[] args) {
+        final String connectionString = "jdbc:postgresql://127.0.0.1:5432/unidb";
+        try {
+            Class.forName("org.postgresql.Driver");
+            Connection connection = DriverManager.getConnection(connectionString,
+                "postgres", "postgres");
+            Statement statement = connection.createStatement();
+            ResultSet professoren = statement.executeQuery("SELECT persnr FROM professoren");
+            Map<Integer, List<String>> vorlesungenByProfessor = new TreeMap<>();
+            while (professoren.next()) {
+                int persnr = professoren.getInt("persnr");
+                vorlesungenByProfessor.put(persnr, new ArrayList<>());
+                PreparedStatement prep = connection.prepareStatement(
+                    "SELECT titel FROM vorlesungen WHERE gelesenvon = ?");
+                prep.setInt(1, persnr);
+                ResultSet vorlesungen = prep.executeQuery();
+                while (vorlesungen.next()) {
+                    vorlesungenByProfessor.get(persnr).add(vorlesungen.getString("titel"));
+                }
+            }
+            for (Integer persnr : vorlesungenByProfessor.keySet()) {
+                System.out.println("Professor mit PersNr. " + persnr + " liest:");
+                for (String vorlesung : vorlesungenByProfessor.get(persnr)) {
+                    System.out.println(vorlesung);
+                }
+                System.out.println();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+Ausgabe:
+
+    Professor mit PersNr. 2125 liest:
+    Ethik
+    Maeeutik
+    Logik
+
+    Professor mit PersNr. 2126 liest:
+    Erkenntnistheorie
+    Wissenschaftstheorie
+    Bioethik
+
+    Professor mit PersNr. 2127 liest:
+
+    Professor mit PersNr. 2133 liest:
+    Der Wiener Kreis
+
+    Professor mit PersNr. 2134 liest:
+    Glaube und Wissen
+
+    Professor mit PersNr. 2136 liest:
+
+    Professor mit PersNr. 2137 liest:
+    Grundzuege
+    Die 3 Kritiken
+
+## 3. Stored Procedures
+
+```sql
+create table t (datum date primary key, yay boolean);
+
+create or replace function f (startdate date, anz int)
+returns void
+as $$
+declare
+    i int;
+    nextDay date;
+begin
+    i := 1;
+    nextDay := startdate;
+    while (anz >= i) loop
+        if (extract(dow from nextDay) in (6, 0)) then
+            insert into t (datum, yay)
+            values (nextDay, true);
+        else
+            insert into t (datum, yay)
+            values (nextDay, false);
+        end if;
+        i := i + 1;
+        nextDAy := nextDay + INTERVAL '1 day';
+    end loop;
+end;
+$$
+language 'plpgsql'
+
+select f('2016-11-11', 111);
+
+select * from t;
+```
+
+Ausgabe:
+
+    datum         yay
+    -----         ---
+    2016-11-11    f
+    2016-11-12    t
+    2016-11-13    t
+    ...
+    2017-02-27    f
+    2017-02-28    f
+    2017-03-01    f
+
+Welche Semantik hat die Prozedur `f` (was genau macht das Programm)? Was
+bedeuten die Daten, welche die Prozedur generiert?
+
+- Das Program ermittelt von einem Startdatum (Parameter `startdate`) an für eine
+  Anzahl von Tagen (Parameter `anz`), ob der jeweilige Tag auf ein Wochenende
+fällt, sprich `dow` (day of week) 6 (Samstag) oder 0 (Sonntag) zurückgibt. Ist
+dies der Fall, wird das jeweilige Datum mit `yay = true` in die Tabelle `t`
+geschrieben, sonst wird der neue Eintrag mit `yay = false` geschrieben. Das
+Programm fährt mit dem nächsten Tag fort, bis die gewünschze Anzahl Tage
+abgearbeitet sind.
