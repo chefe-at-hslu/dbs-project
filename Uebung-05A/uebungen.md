@@ -263,7 +263,11 @@ Rekursionsschritt? Erklären Sie die Funktionsweise dieser Query.
 - Der Rekursionsschritt befindet sich auf der Zeile `from r e join pfad e`, wo
   der Ausdruck `r` (eine Vorgänger-Nachfolger-Beziehung) auf die bereits
 ermittelten Pfade gejoint wird.
-- TODO: Funktionsweise erklären!
+- Die Tabelle wird solange mit sich selber "gejoint", bis es in der Tabelle
+  keine Zeilen keine mehr gibt. In diesem Fall ist das, wenn die Vorlesung
+  keinen Nachfolger mehr hat. Dann ist man an einem Punkt angekommen, von dem
+  keinen Weg weiter führt. Dann wird wird ein Schritt zurückgegngen und das
+  Vorgehen beginnt von neuem.
 
 ## 6. Windowing
 
