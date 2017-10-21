@@ -266,8 +266,8 @@ ermittelten Pfade gejoint wird.
 - Die Tabelle wird solange mit sich selber "gejoint", bis es in der Tabelle
   keine Zeilen keine mehr gibt. In diesem Fall ist das, wenn die Vorlesung
   keinen Nachfolger mehr hat. Dann ist man an einem Punkt angekommen, von dem
-  keinen Weg weiter führt. Dann wird wird ein Schritt zurückgegngen und das
-  Vorgehen beginnt von neuem.
+  kein Weg weiter führt. Dann wird ein Schritt zurückgegngen und das Vorgehen
+  beginnt von Neuem.
 
 ## 6. Windowing
 
