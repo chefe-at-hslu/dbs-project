@@ -136,7 +136,7 @@ alter table professoren
 
 alter table pruefen
     add constraint ck_pruefen_note
-    check (note >= 1.0 and note <= 5.0);
+    check note between 1.0 and 5;
 
 select * from studenten;
 
@@ -265,4 +265,33 @@ insert into pruefen (matrnr, vorlnr, persnr) values (28106, 5216, 2126);
 ERROR: Nicht bestandene Vorgängerprüfung(en) für Student 28106 und Vorlesung 5216
 CONTEXT:  PL/pgSQL function checkzugelassen() line 18 at RAISE
 */
+```
+
+Alternative Lösung:
+
+```sql
+create or replace function checkPruefungen()
+returns trigger as $$ begin
+if (select count(*) from (
+        select note from vorlesungen
+        left join voraussetzen
+            on vorlesungen.vorlnr = voraussetzen.nachfolger
+        left join pruefen
+            on voraussetzen.vorgänger = pruefen.vorlnr
+        where vorlesungen.vorlnr = new.vorlnr) as vornoten
+    where note > 3 or note is null) = 0
+    then return new;
+    else raise exception
+        'Voraussetzungen nicht erfüllt';
+    return old;
+    end if;
+end; $$ language 'plpgsql';
+```
+
+Trigger dazu:
+
+```sql
+create trigger checkPruefungen
+    before insert on pruefen
+    for each row execute procedure checkPruefungen();
 ```
