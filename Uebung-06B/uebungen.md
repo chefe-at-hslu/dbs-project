@@ -20,7 +20,7 @@ Was ist ein Surrogat?
 
 - Ein Surrogat ist ein Schlüsselwert, der im Gegensatz zu einem natürlichen
   Schlüssel nicht aus den Informationen eines Tupels besteht, sondern künstlich
-  generiert und unverändertlich ist.
+  generiert und unveränderlich ist.
 
 ### Frage 3
 
@@ -42,7 +42,7 @@ Was ist der Zusammenhang von NF² mit der Objektorientierung?
 Was heisst objektrelationales Mapping?
 
 - Beim objektrelationalen Mapping wird die objektorientierte Struktur einer
-  Anwendung auf relationen einer Datenbank umgesetzt.
+  Anwendung auf Relationen einer Datenbank umgesetzt.
 - Dabei wird wird nicht jede Tabelle zu einem Objekt bzw. jedes Objekt zu einer
   Tabelle, da Beziehungstabellen als Objektreferenzen umgesetzt werden.
 
