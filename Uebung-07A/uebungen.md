@@ -192,7 +192,9 @@ Mit diesem Query-String kann man das Passwort eines Benutzers anhand dessen `id`
 
 Für Abfragen mit `UNION` ist es wichtig, die Anzahl zurückgegebener Spalten zu
 kennen. Dies habe ich erraten, indem ich jeweils ein `,1` zusätzlich selektiert
-habe.
+habe. Da nur ein einziger Datensatz als Rückgabe erwartet wird, ist es wichtig,
+dass der erste Teil der Abfrage keine Ergebnismenge hat. Darum ist `id=0`
+gesetzt, weil es keinen Benutzer mit dieser `id` gibt.
 
 Die Spaltennamen habe ich auch erraten, sie liessen sich aber auch über das
 `information_schema` ermitteln, indem man die Spalten anhand der
