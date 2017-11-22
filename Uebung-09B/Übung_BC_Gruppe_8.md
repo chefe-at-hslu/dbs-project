@@ -34,5 +34,5 @@ Anwendungsfall: Nachrichtensystem
     - Bob signiert die Nachricht zur Bestätigung, nachdem er sie gelesen hat.
     - Die Nachricht wird in der Blockchain von anderen Teilnehmern bestätigt.
 - Alice möchte im Zweifelsfall nachweisen können, dass die übermittelte und von Bob empfangene Nachricht genau so lautet, wie sie das behauptet.
-    - Dazu kann sie die von ihr gespeicherte Originalnachricht wieder hashen.
+    - Dazu kann sie die von ihr gespeicherte Originalnachricht wieder hashen und den resultierenden Hashwert zum Nachweis mit demjenigen in der Blockchain vergleichen.
     - Ist die Originalnachricht verloren, ist dies nicht mehr möglich.
